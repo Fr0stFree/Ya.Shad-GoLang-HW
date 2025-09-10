@@ -21,7 +21,6 @@ stages:
 rebuild-base-image:
   extends: .docker
   stage: build-image
-  when: manual
   script:
     - docker build -f build.docker -t $REGISTRY/build .
     - docker push $REGISTRY/build:latest

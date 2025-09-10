@@ -1,5 +1,8 @@
 FROM golang:1.24
 
+# Install pipx
+RUN apt-get update && apt-get install -y pipx && pipx install git-filter-repo && rm -rf /var/lib/apt/lists/*
+
 # enable backports for git-filter-repo
 RUN echo "deb http://deb.debian.org/debian bullseye-backports main" >> /etc/apt/sources.list.d/backports.list
 
