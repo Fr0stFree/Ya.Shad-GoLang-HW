@@ -4,17 +4,14 @@ settings: # required
   course_name: go
 
   gitlab_base_url: https://gitlab.manytask.org
-  public_repo: go/public-2025-spring
-  students_group: go/students-2025-spring
+  public_repo: itmo/go/public-2025-fall
+  students_group: itmo/go/students-2025-fall
 
 ui:
-  task_url_template: https://github.com/slon/shad-go/tree/main/$TASK_NAME
+  task_url_template: https://gitlab.manytask.org/itmo/go/tree/main/$TASK_NAME
 
   # optional, any number of links
   links:
-    "TG Channel": https://t.me/+eb5z6ZS-sI8xZDNi
-    "TG Chat": https://t.me/+Tk8VTMAk5Tlp7Txm
-    "LMS": https://lk.yandexdataschool.ru/
     "Contribute Manytask": https://github.com/manytask
 
 deadlines:
@@ -47,6 +44,7 @@ deadlines:
       steps:
         0.3: 2025-03-02 23:59
       end: 2025-07-10 23:59
+      enabled: false
       tasks:
         - task: hotelbusiness
           score: 100
@@ -66,6 +64,7 @@ deadlines:
       steps:
         0.3: 2025-03-09 23:59
       end: 2025-07-10 23:59
+      enabled: false
       tasks:
         - task: otp
           score: 100
@@ -85,6 +84,7 @@ deadlines:
       steps:
         0.3: 2025-03-16 23:59
       end: 2025-07-10 23:59
+      enabled: false
       tasks:
         - task: tour1
           score: 100
@@ -102,6 +102,8 @@ deadlines:
     - group: "[HW] Gitfame"
       start: 2025-03-06 18:00
       end: 2025-03-21 23:59
+      enabled: false
+      is_large: true
       tasks:
         - task: gitfame
           score: 0
@@ -111,6 +113,7 @@ deadlines:
       steps:
         0.3: 2025-03-23 23:59
       end: 2025-07-10 23:59
+      enabled: false
       tasks:
         - task: testequal
           score: 100
@@ -128,6 +131,7 @@ deadlines:
       steps:
         0.3: 2025-03-31 23:59
       end: 2025-07-10 23:59
+      enabled: false
       tasks:
         - task: dupcall
           score: 200
@@ -143,6 +147,7 @@ deadlines:
       steps:
         0.3: 2025-04-06 23:59
       end: 2025-07-10 23:59
+      enabled: false
       tasks:
         - task: urlshortener
           score: 100
@@ -160,6 +165,7 @@ deadlines:
       steps:
         0.3: 2025-04-13 23:59
       end: 2025-07-10 23:59
+      enabled: false
       tasks:
         - task: dao
           score: 100
@@ -173,6 +179,8 @@ deadlines:
     - group: "[HW] Dist Build"
       start: 2025-04-03 13:00
       end: 2025-05-11 23:59
+      enabled: false
+      is_large: true
       tasks:
         - task: distbuild
           score: 1
@@ -182,6 +190,7 @@ deadlines:
       steps:
         0.3: 2025-04-27 23:59
       end: 2025-07-10 23:59
+      enabled: false
       tasks:
         - task: genericsum
           score: 100
@@ -197,6 +206,7 @@ deadlines:
       steps:
         0.3: 2025-05-04 23:59
       end: 2025-07-10 23:59
+      enabled: false
       tasks:
         - task: reversemap
           score: 100
@@ -214,6 +224,7 @@ deadlines:
       steps:
         0.3: 2025-05-11 23:59
       end: 2025-07-10 23:59
+      enabled: false
       tasks:
         - task: illegal
           score: 100
@@ -234,6 +245,7 @@ deadlines:
     - group: Observability
       start: 2025-05-15 13:00
       end: 2025-07-10 23:59
+      enabled: false
       tasks:
         - task: firegod
           score: 200
@@ -241,6 +253,7 @@ deadlines:
     - group: Bonus
       start: 2025-04-04 13:00
       end: 2025-07-10 23:59
+      enabled: false
       tasks:
         - task: smartsched
           is_bonus: true

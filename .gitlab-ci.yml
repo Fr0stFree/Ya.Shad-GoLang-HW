@@ -1,7 +1,5 @@
 grade:
-  tags:
-    - experimental
-  image: gitlab.manytask.org:5050/go/public-2024-spring
+  image: gitlab.manytask.org:5050/itmo/go/public-2025-fall
   script:
     - testtool grade
   timeout: 10 minutes

@@ -1,5 +1,12 @@
+
+variables:
+  GIT_STRATEGY: clone
+  REGISTRY: gitlab.manytask.org:5050/itmo/go/public-2024-fall
+  REPORT_URL: https://app.manytask.org/api/itmo-go-2025-fall/update_config
+
+
 check:
-  image: gitlab.manytask.org:5050/go/public-2024-spring/build
+  image: $REGISTRY/build
   script:
     - go mod download
     - golangci-lint run --build-tags private,solution ./...
@@ -14,8 +21,8 @@ rebuild-base-image:
     - docker
   when: manual
   script:
-    - docker build -f build.docker -t gitlab.manytask.org:5050/go/public-2024-spring/build .
-    - docker push gitlab.manytask.org:5050/go/public-2024-spring/build:latest
+    - docker build -f build.docker -t $REGISTRY/build .
+    - docker push $REGISTRY/build:latest
 
 deploy:
   only:
@@ -23,9 +30,9 @@ deploy:
   tags:
     - docker
   script:
-    - docker pull gitlab.manytask.org:5050/go/public-2024-spring/build:latest
-    - docker build -f testenv.docker -t gitlab.manytask.org:5050/go/public-2024-spring .
-    - docker push gitlab.manytask.org:5050/go/public-2024-spring:latest
+    - docker pull $REGISTRY/build:latest
+    - docker build -f testenv.docker -t $REGISTRY .
+    - docker push $REGISTRY:latest
 
 build-slides:
   only:
@@ -33,8 +40,8 @@ build-slides:
   tags:
     - docker
   script:
-    - docker build lectures -t gitlab.manytask.org:5050/go/public-2024-spring/lectures
-    - docker push gitlab.manytask.org:5050/go/public-2024-spring/lectures
+    - docker build lectures -t $REGISTRY/lectures
+    - docker push $REGISTRY/lectures
 
 update-config:
   only:
@@ -45,20 +52,16 @@ update-config:
         -H "Authorization: Bearer $TESTER_TOKEN" \
         -H "Content-type: application/x-yaml" \
         --data-binary "@.manytask.yml" \
-        https://go.manytask.org/api/update_config
-    - >
-      curl -v --fail --silent -X POST \
-        -H "Authorization: Bearer $TESTER_TOKEN" \
-        https://go.manytask.org/api/update_cache
+        $REPORT_URL
 
 push-to-public:
   stage: .post
-  image: gitlab.manytask.org:5050/go/public-2024-spring
+  image: $REGISTRY
   parallel:
     matrix:
       - REMOTE:
-          - git@github.com:slon/shad-go.git
-          - git@gitlab.manytask.org:go/public-2025-spring.git
+          - git@gitlab.com:manytask/itmo/go/private.git
+          - git@gitlab.manytask.org:itmo/go/public-2025-fall.git
   only:
     - master
   script:
@@ -78,5 +81,5 @@ deploy-slides:
   tags:
     - web
   script:
-    - docker pull gitlab.manytask.org:5050/go/public-2024-spring/lectures
+    - docker pull $REGISTRY/lectures
     - cd /srv/manytask/go && docker compose up -d
