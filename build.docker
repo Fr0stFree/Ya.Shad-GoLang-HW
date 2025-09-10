@@ -1,14 +1,6 @@
 FROM golang:1.24
 
-# Install pipx
-RUN apt-get update && apt-get install -y pipx && pipx install git-filter-repo && rm -rf /var/lib/apt/lists/*
-
-# enable backports for git-filter-repo
-RUN echo "deb http://deb.debian.org/debian bullseye-backports main" >> /etc/apt/sources.list.d/backports.list
-
-RUN apt-get update && apt-get install -y \
-    lsb-release curl gpg rsync libssl-dev postgresql sudo git-filter-repo/bullseye-backports \
- && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends lsb-release curl gpg rsync libssl-dev postgresql sudo git-filter-repo && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg && \
     chmod 644 /usr/share/keyrings/redis-archive-keyring.gpg && \
