@@ -4,13 +4,41 @@ variables:
   REGISTRY: gitlab.manytask.org:5050/itmo/go/public-2025-fall
   REPORT_URL: https://app.manytask.org/api/itmo-go-2025-fall/update_config
 
+stages:
+  - build-image
+  - deploy-image
+  - check-repo
+  - deploy-manytask
+  - build-slides
+  - deploy-slides
+
 .docker:
   image: docker:20.10.18
   before_script:
     # register `config.json` to be able to push
     - mkdir -p $HOME/.docker && echo $DOCKER_AUTH_CONFIG > $HOME/.docker/config.json
 
+rebuild-base-image:
+  extends: .docker
+  stage: build-image
+  when: manual
+  script:
+    - docker build -f build.docker -t $REGISTRY/build .
+    - docker push $REGISTRY/build:latest
+
+deploy:
+  extends: .docker
+  stage: deploy-image
+  only:
+    - master
+  script:
+    - docker pull $REGISTRY/build:latest
+    - docker build -f testenv.docker -t $REGISTRY .
+    - docker push $REGISTRY:latest
+
 check:
+  extends: .docker
+  stage: check-repo
   image: $REGISTRY/build
   script:
     - go mod download
@@ -21,31 +49,8 @@ check:
     - sudo -u nobody HOME=/tmp PATH=$PATH /usr/local/go/bin/go test -tags private,solution ./...
     - sudo -u nobody HOME=/tmp PATH=$PATH /usr/local/go/bin/go test -tags private,solution -race ./...
 
-rebuild-base-image:
-  extends: .docker
-  when: manual
-  script:
-    - docker build -f build.docker -t $REGISTRY/build .
-    - docker push $REGISTRY/build:latest
-
-deploy:
-  only:
-    - master
-  extends: .docker
-  script:
-    - docker pull $REGISTRY/build:latest
-    - docker build -f testenv.docker -t $REGISTRY .
-    - docker push $REGISTRY:latest
-
-build-slides:
-  only:
-    - master
-  extends: .docker
-  script:
-    - docker build lectures -t $REGISTRY/lectures
-    - docker push $REGISTRY/lectures
-
 update-config:
+  stage: deploy-manytask
   only:
     - master
   script:
@@ -57,7 +62,7 @@ update-config:
         $REPORT_URL
 
 push-to-public:
-  stage: .post
+  stage: deploy-manytask
   image: $REGISTRY
   parallel:
     matrix:
@@ -76,8 +81,17 @@ push-to-public:
     - env GIT_SSH_COMMAND="ssh -i ${PWD}/private.key -o StrictHostKeyChecking=no" git remote add -f github $REMOTE
     - env GIT_SSH_COMMAND="ssh -i ${PWD}/private.key -o StrictHostKeyChecking=no" git push github main
 
+build-slides:
+  stage: build-slides
+  only:
+    - master
+  extends: .docker
+  script:
+    - docker build lectures -t $REGISTRY/lectures
+    - docker push $REGISTRY/lectures
+
 deploy-slides:
-  stage: .post
+  stage: deploy-slides
   only:
     - master
   tags:
