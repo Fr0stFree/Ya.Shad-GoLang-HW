@@ -1,9 +1,14 @@
 
 variables:
   GIT_STRATEGY: clone
-  REGISTRY: gitlab.manytask.org:5050/itmo/go/public-2024-fall
+  REGISTRY: gitlab.manytask.org:5050/itmo/go/public-2025-fall
   REPORT_URL: https://app.manytask.org/api/itmo-go-2025-fall/update_config
 
+.docker:
+  image: docker:20.10.18
+  before_script:
+    # register `config.json` to be able to push
+    - mkdir -p $HOME/.docker && echo $DOCKER_AUTH_CONFIG > $HOME/.docker/config.json
 
 check:
   image: $REGISTRY/build
@@ -17,8 +22,7 @@ check:
     - sudo -u nobody HOME=/tmp PATH=$PATH /usr/local/go/bin/go test -tags private,solution -race ./...
 
 rebuild-base-image:
-  tags:
-    - docker
+  extends: .docker
   when: manual
   script:
     - docker build -f build.docker -t $REGISTRY/build .
@@ -27,8 +31,7 @@ rebuild-base-image:
 deploy:
   only:
     - master
-  tags:
-    - docker
+  extends: .docker
   script:
     - docker pull $REGISTRY/build:latest
     - docker build -f testenv.docker -t $REGISTRY .
@@ -37,8 +40,7 @@ deploy:
 build-slides:
   only:
     - master
-  tags:
-    - docker
+  extends: .docker
   script:
     - docker build lectures -t $REGISTRY/lectures
     - docker push $REGISTRY/lectures
