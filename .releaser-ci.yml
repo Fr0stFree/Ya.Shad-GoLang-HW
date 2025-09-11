@@ -1,7 +1,7 @@
 
 variables:
   GIT_STRATEGY: clone
-  REGISTRY: gitlab.manytask.org:5050/itmo/go/public-2025-fall
+  REGISTRY: gitlab.manytask.org:5050/go/public-2025-fall
   REPORT_URL: https://app.manytask.org/api/itmo-go-2025-fall/update_config
 
 stages:
