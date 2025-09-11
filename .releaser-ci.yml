@@ -50,6 +50,7 @@ deploy:
 
 update-config:
   stage: deploy-manytask
+  image: curlimages/curl:latest
   only:
     - master
   script:
