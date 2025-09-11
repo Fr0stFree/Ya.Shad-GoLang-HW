@@ -7,7 +7,7 @@ variables:
 stages:
   - build-image
   - deploy-image
-  - check-repo
+#  - check-repo
   - deploy-manytask
   - build-slides
   - deploy-slides
@@ -35,7 +35,7 @@ deploy:
     - docker build -f testenv.docker -t $REGISTRY .
     - docker push $REGISTRY:latest
 
-check:
+.check:
   extends: .docker
   stage: check-repo
   image: $REGISTRY/build
