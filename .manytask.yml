@@ -4,11 +4,11 @@ settings: # required
   course_name: go
 
   gitlab_base_url: https://gitlab.manytask.org
-  public_repo: itmo/go/public-2025-fall
-  students_group: itmo/go/students-2025-fall
+  public_repo: go/public-2025-fall
+  students_group: go/students-2025-fall
 
 ui:
-  task_url_template: https://gitlab.manytask.org/itmo/go/tree/main/$TASK_NAME
+  task_url_template: https://gitlab.manytask.org/go/tree/main/$TASK_NAME
 
   # optional, any number of links
   links:
