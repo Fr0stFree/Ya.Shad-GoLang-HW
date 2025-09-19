@@ -23,10 +23,10 @@ deadlines:
 
   schedule:
     - group: Hello World
-      start: 2025-09-01 18:00
+      start: 2025-09-11 18:00
       steps:
-        0.3: 2025-10-01 23:59
-      end: 2026-01-01 23:59
+        0.3: 2025-09-19 23:59
+      end: 2025-09-21 23:59
       tasks:
         - task: sum
           score: 100
@@ -40,11 +40,10 @@ deadlines:
           score: 100
 
     - group: Basics
-      start: 2025-02-20 18:00
+      start: 2025-09-18 18:00
       steps:
-        0.3: 2025-03-02 23:59
-      end: 2025-07-10 23:59
-      enabled: false
+        0.3: 2025-09-26 23:59
+      end: 2025-09-28 23:59
       tasks:
         - task: hotelbusiness
           score: 100
