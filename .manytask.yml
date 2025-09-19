@@ -25,8 +25,8 @@ deadlines:
     - group: Hello World
       start: 2025-09-11 18:00
       steps:
-        0.3: 2025-09-19 23:59
-      end: 2025-09-21 23:59
+        0.3: 2025-09-26 23:59
+      end: 2025-10-01 00:00
       tasks:
         - task: sum
           score: 100
