@@ -78,6 +78,9 @@ push-to-public:
       if [ -n "$MANYTASK_PRIVATE_KEY" ] && [ -f "$MANYTASK_PRIVATE_KEY" ]; then
         echo "Using MANYTASK_PRIVATE_KEY file variable"
         cp "$MANYTASK_PRIVATE_KEY" private.key
+        echo "Key info:"
+        head -1 private.key
+        ssh-keygen -l -f private.key || echo "Failed to get key fingerprint"
       else
         echo "Error: MANYTASK_PRIVATE_KEY is not set in CI/CD variables"
         exit 1
