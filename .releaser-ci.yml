@@ -77,10 +77,12 @@ push-to-public:
     - |
       if [ -n "$MANYTASK_PRIVATE_KEY" ] && [ -f "$MANYTASK_PRIVATE_KEY" ]; then
         echo "Using MANYTASK_PRIVATE_KEY file variable"
-        cp "$MANYTASK_PRIVATE_KEY" private.key
-        chmod 400 private.key
+        mkdir -p ~/.ssh
+        cp "$MANYTASK_PRIVATE_KEY" ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        chmod 700 ~/.ssh
         echo "Key info:"
-        ssh-keygen -l -f private.key || echo "Failed to get key fingerprint"
+        ssh-keygen -l -f ~/.ssh/id_rsa || echo "Failed to get key fingerprint"
       else
         echo "Error: MANYTASK_PRIVATE_KEY is not set in CI/CD variables"
         exit 1
@@ -88,8 +90,8 @@ push-to-public:
     - git branch -D main || true
     - git checkout -b main
     - git remote rm github || true
-    - env GIT_SSH_COMMAND="ssh -i ${PWD}/private.key -o StrictHostKeyChecking=no" git remote add -f github $REMOTE
-    - env GIT_SSH_COMMAND="ssh -i ${PWD}/private.key -o StrictHostKeyChecking=no" git push github main
+    - env GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git remote add -f github $REMOTE
+    - env GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git push github main
 
 build-slides:
   stage: build-slides
