@@ -12,7 +12,7 @@ stages:
   - deploy-slides
 
 .docker:
-  image: docker:20.10.18
+  image: docker:24.0.7
   before_script:
     # register `config.json` to be able to push
     - mkdir -p $HOME/.docker && echo $DOCKER_AUTH_CONFIG > $HOME/.docker/config.json
