@@ -79,9 +79,8 @@ push-to-public:
         echo "Error: GITHUB_PUSH_KEY is not set in CI/CD variables"
         exit 1
       fi
-    - echo "$GITHUB_PUSH_KEY" | tr -d '\n\r ' | base64 -d > private.key || (echo "Error: Failed to decode GITHUB_PUSH_KEY. Check if it's properly base64 encoded." && exit 1)
-    - chmod 600 private.key
-    - chmod 700 .
+    - echo "$GITHUB_PUSH_KEY" > private.key
+    - chmod 400 private.key
     - git branch -D main || true
     - git checkout -b main
     - git remote rm github || true
