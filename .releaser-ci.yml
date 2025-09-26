@@ -1,4 +1,3 @@
-
 variables:
   GIT_STRATEGY: clone
   REGISTRY: gitlab.manytask.org:5050/go/public-2025-fall
@@ -7,7 +6,7 @@ variables:
 stages:
   - build-image
   - deploy-image
-#  - check-repo
+  #  - check-repo
   - deploy-manytask
   - build-slides
   - deploy-slides
@@ -67,8 +66,9 @@ push-to-public:
   parallel:
     matrix:
       - REMOTE:
-          - git@gitlab.com:manytask/itmo/go/private.git
-          - git@gitlab.manytask.org:itmo/go/public-2025-fall.git
+          # - git@gitlab.com:manytask/itmo/go/private.git
+          # - git@gitlab.manytask.org:itmo/go/public-2025-fall.git
+          - git@gitlab.manytask.org:go/public-2025-fall.git
   only:
     - master
   script:
