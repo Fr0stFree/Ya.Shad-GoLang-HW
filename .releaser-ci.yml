@@ -73,7 +73,7 @@ push-to-public:
     - master
   before_script:
     - eval $(ssh-agent -s)
-    - cat "$MANYTASK_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - echo "$MANYTASK_PRIVATE_KEY" | tr -d '\r' | ssh-add -
     - mkdir -p ~/.ssh
     - touch ~/.ssh/config
     - touch ~/.ssh/known_hosts
