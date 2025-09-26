@@ -71,42 +71,23 @@ push-to-public:
           - git@gitlab.manytask.org:go/public-2025-fall.git
   only:
     - master
+  before_script:
+    - eval $(ssh-agent -s)
+    - cat "$MANYTASK_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - touch ~/.ssh/config
+    - touch ~/.ssh/known_hosts
+    - chmod -R 400 ~/.ssh
+    - ssh-keyscan gitlab.manytask.org >> ~/.ssh/known_hosts
+    - '[[ -f /.dockerinit ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
   script:
-    # Check and update SSH/OpenSSL versions
-    - |
-      echo "Current versions:"
-      ssh -V
-      openssl version
-      apt-get update && apt-get install -y openssh-client
-      echo "Updated versions:"
-      ssh -V
-      openssl version
     - testtool list-private-files > /tmp/private_files.txt
     - git filter-repo --force --paths-from-file /tmp/private_files.txt --invert-path
-    - |
-      if [ -n "$MANYTASK_PRIVATE_KEY" ] && [ -f "$MANYTASK_PRIVATE_KEY" ]; then
-        echo "Using MANYTASK_PRIVATE_KEY file variable"
-        echo "File path: $MANYTASK_PRIVATE_KEY"
-        echo "File size: $(wc -c < $MANYTASK_PRIVATE_KEY) bytes"
-        echo "First line of key:"
-        head -1 "$MANYTASK_PRIVATE_KEY"
-
-        mkdir -p ~/.ssh && chmod 700 ~/.ssh
-        cp "$MANYTASK_PRIVATE_KEY" ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-
-        echo "Copied key size: $(wc -c < ~/.ssh/id_rsa) bytes"
-        echo "Key info:"
-        ssh-keygen -l -f ~/.ssh/id_rsa || echo "Failed to get key fingerprint"
-      else
-        echo "Error: MANYTASK_PRIVATE_KEY is not set in CI/CD variables"
-        exit 1
-      fi
     - git branch -D main || true
     - git checkout -b main
     - git remote rm github || true
-    - env GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git remote add -f github $REMOTE
-    - env GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git push github main
+    - git remote add -f github $REMOTE
+    - git push github main
 
 build-slides:
   stage: build-slides
