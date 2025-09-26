@@ -77,10 +77,9 @@ push-to-public:
     - |
       if [ -n "$MANYTASK_PRIVATE_KEY" ] && [ -f "$MANYTASK_PRIVATE_KEY" ]; then
         echo "Using MANYTASK_PRIVATE_KEY file variable"
-        mkdir -p ~/.ssh
-        cp "$MANYTASK_PRIVATE_KEY" ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        chmod 700 ~/.ssh
+        mkdir -p ~/.ssh && chmod 700 ~/.ssh
+        echo \"\$MANYTASK_PRIVATE_KEY\" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa && ls -la ~/.ssh/
         echo "Key info:"
         ssh-keygen -l -f ~/.ssh/id_rsa || echo "Failed to get key fingerprint"
       else
