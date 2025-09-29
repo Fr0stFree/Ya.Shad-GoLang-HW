@@ -102,8 +102,6 @@ deploy-slides:
   stage: deploy-slides
   only:
     - master
-  tags:
-    - web
   script:
     - docker pull $REGISTRY/lectures
     - cd /srv/manytask/go && docker compose up -d
