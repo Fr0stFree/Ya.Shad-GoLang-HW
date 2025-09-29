@@ -63,7 +63,7 @@ deadlines:
       steps:
         0.3: 2025-10-09 17:59 # Чт
       end: 2025-10-16 17:59 # Чт
-      enabled: false
+      enabled: true
       tasks:
         - task: otp
           score: 100
@@ -83,7 +83,7 @@ deadlines:
       steps:
         0.3: 2025-10-16 17:59 # Чт
       end: 2025-10-23 17:59 # Чт
-      enabled: false
+      enabled: true
       tasks:
         - task: tour1
           score: 100
@@ -102,7 +102,7 @@ deadlines:
       start: 2025-10-16 18:00 # Чт
       # Для большого ДЗ steps часто не нужен или срок больше
       end: 2025-10-31 23:59 # Оставляем вашу исходную дату, т.к. это большой проект
-      enabled: false
+      enabled: true
       is_large: true
       tasks:
         - task: gitfame
@@ -113,7 +113,7 @@ deadlines:
       steps:
         0.3: 2025-10-30 17:59 # Чт
       end: 2025-11-06 17:59 # Чт (обратите внимание, сдвинулось на неделю из-за правила)
-      enabled: false
+      enabled: true
       tasks:
         - task: testequal
           score: 100
@@ -224,7 +224,7 @@ deadlines:
       steps:
         0.3: 2025-12-18 17:59 # Чт
       end: 2025-12-25 17:59 # Чт (исправлено с 2025-07-10)
-      enabled: false
+      enabled: true
       tasks:
         - task: illegal
           score: 100
