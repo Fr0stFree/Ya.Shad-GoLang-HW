@@ -99,8 +99,9 @@ build-slides:
     - docker push $REGISTRY/lectures
 
 deploy-slides:
-  extends: .docker
   stage: deploy-slides
+  tags:
+    - web # Запускать на конкретном shell runner
   only:
     - master
   script:
