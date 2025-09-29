@@ -99,6 +99,7 @@ build-slides:
     - docker push $REGISTRY/lectures
 
 deploy-slides:
+  extends: .docker
   stage: deploy-slides
   only:
     - master
