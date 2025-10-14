@@ -1,5 +1,5 @@
 grade:
-  image: gitlab.manytask.org:5050/go/public-2025-fall
+  image: gitlab.manytask.org:5050/itmo/go/public-2025-fall
   script:
     - testtool grade
   timeout: 10 minutes
