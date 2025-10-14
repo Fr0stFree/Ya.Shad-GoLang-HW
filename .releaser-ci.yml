@@ -87,7 +87,7 @@ push-to-public:
     - git checkout -b main
     - git remote rm github || true
     - git remote add -f github $REMOTE
-    - git push github master
+    - git push github master --force
 
 build-slides:
   stage: build-slides
