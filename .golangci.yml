@@ -1,107 +1,108 @@
-version: "2"
+version: '2'
 
-# options for analysis running
 run:
-  # default concurrency is a available CPU number
+  timeout: 5m
+  tests: true
   concurrency: 8
 
-  # timeout for analysis, e.g. 30s, 5m, default is 1m
-  timeout: 5m
-
-  # exit code when at least one issue was found, default is 1
-  issues-exit-code: 1
-
-  # include test files or not, default is true
-  tests: true
-
-# output configuration options
-output:
-  # print lines of code with issue, default is true
-  print-issued-lines: true
-
-  # print linter name in the end of issue text, default is true
-  print-linter-name: true
-
-# all available settings of specific linters
-linters-settings:
-  shadow: true
-  golint:
-    # minimal confidence for issues, default is 0.8
-    min-confidence: 0.8
-  gofmt:
-    # simplify code: gofmt with `-s` option, true by default
-    simplify: true
-  stylecheck:
-    # https://staticcheck.io/docs/options#checks
-    checks: ["all", "-ST1018"]
-    # https://staticcheck.io/docs/options#initialisms
-    initialisms:
-      [
-        "ACL",
-        "API",
-        "ASCII",
-        "CPU",
-        "CSS",
-        "DNS",
-        "EOF",
-        "GUID",
-        "HTML",
-        "HTTP",
-        "HTTPS",
-        "ID",
-        "IP",
-        "JSON",
-        "QPS",
-        "RAM",
-        "RPC",
-        "SLA",
-        "SMTP",
-        "SQL",
-        "SSH",
-        "TCP",
-        "TLS",
-        "TTL",
-        "UDP",
-        "UI",
-        "GID",
-        "UID",
-        "UUID",
-        "URI",
-        "URL",
-        "UTF8",
-        "VM",
-        "XML",
-        "XMPP",
-        "XSRF",
-        "XSS",
-        "CSV",
-      ]
-
 linters:
-  disable-all: true
   enable:
-    - errcheck
-    - govet
-    - ineffassign
-    - staticcheck
-    - unconvert
+    # По умолчанию включенные (важные для корректности)
+    - errcheck      # проверка обработки ошибок
+    - govet         # статический анализ
+    - ineffassign   # неиспользуемые присваивания
+    - staticcheck   # мощный статический анализатор (включает gosimple)
+    - unused        # неиспользуемый код
+
+    # Дополнительные проверки стиля и качества
+    - revive        # замена golint и stylecheck
+    - gocritic      # различные проверки на баги и стиль
+    - misspell      # проверка орфографии
+    - goconst       # находит повторяющиеся строки
+    - prealloc      # предварительное выделение памяти для слайсов
+
+    # Проверки безопасности и производительности
+    - gosec         # проверки безопасности
+    - bodyclose     # проверка закрытия HTTP response body
+    - sqlclosecheck # проверка закрытия SQL соединений
+
+    # Проверки сложности кода
+    - gocyclo       # цикломатическая сложность
+    - gocognit      # когнитивная сложность
+
+linters-settings:
+  revive:
+    rules:
+      - name: blank-imports
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+      - name: if-return
+      - name: increment-decrement
+      - name: var-naming
+      - name: var-declaration
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+      - name: indent-error-flow
+      - name: errorf
+      - name: empty-block
+      - name: superfluous-else
+      - name: unused-parameter
+      - name: unreachable-code
+      - name: redefines-builtin-id
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - performance
+      - style
+    disabled-checks:
+      - commentFormatting
+
+  gocyclo:
+    min-complexity: 15
+
+  gocognit:
+    min-complexity: 20
+
+  goconst:
+    min-len: 2
+    min-occurrences: 2
+
+  misspell:
+    locale: US
+
+  prealloc:
+    simple: true
+    range-loops: true
+    for-loops: true
 
 issues:
-  # List of regexps of issue texts to exclude, empty list by default.
-  # But independently from this option we use default exclude patterns,
-  # it can be disabled by `exclude-use-default: false`. To list all
-  # excluded by default patterns execute `golangci-lint run --help`
-  exclude:
-    - Using the variable on range scope .* in function literal
-
-  # Independently from option `exclude` we use default exclude patterns,
-  # it can be disabled by this option. To list all
-  # excluded by default patterns execute `golangci-lint run --help`.
-  # Default value for this option is true.
-  exclude-use-default: true
-
-  # Maximum issues count per one linter. Set to 0 to disable. Default is 50.
-  max-per-linter: 0
-
-  # Maximum count of issues with the same text. Set to 0 to disable. Default is 3.
+  max-issues-per-linter: 0
   max-same-issues: 0
+
+  # Исключения для некоторых паттернов
+  exclude-rules:
+    # Не требовать обработку ошибок для fmt.Print* в main
+    - path: main\.go
+      linters:
+        - errcheck
+      text: "Error return value of `fmt\\.(Print|Printf|Println)` is not checked"
+
+    # Игнорировать использование переменной в замыкании цикла (часто нормально в тестах)
+    - path: _test\.go
+      text: "Using the variable on range scope .* in function literal"
+
+    # В тестах можно использовать более длинные функции
+    - path: _test\.go
+      linters:
+        - funlen
+        - gocognit
+        - gocyclo
