@@ -29,7 +29,7 @@ func TestMakeLetter(t *testing.T) {
 	randomTestUser := testtool.RandomName()
 	randomTriggerer := testtool.RandomName()
 	randomPipelineID := randomInt64(t)
-	randomJobIDS := []int64{randomInt64(t), randomInt64(t)}
+	randomJobIDs := []int64{randomInt64(t), randomInt64(t)}
 	randomJobNames := []string{testtool.RandomName(), testtool.RandomName()}
 	randomStages := []string{testtool.RandomName(), testtool.RandomName()}
 	randomHash := testtool.RandomName()[:8]
@@ -142,7 +142,7 @@ ERROR: Job failed: exit code 1`,
 					TriggeredBy: randomTriggerer,
 					FailedJobs: []Job{
 						{
-							ID:    randomJobIDS[0],
+							ID:    randomJobIDs[0],
 							Name:  randomJobNames[0],
 							Stage: randomStages[0],
 							RunnerLog: `$ testtool grade
@@ -166,7 +166,7 @@ some tasks failed
 ERROR: Job failed: exit code 1`,
 						},
 						{
-							ID:    randomJobIDS[1],
+							ID:    randomJobIDs[1],
 							Name:  randomJobNames[1],
 							Stage: randomStages[1],
 							RunnerLog: `--- FAIL: TestSum (0.00s)
