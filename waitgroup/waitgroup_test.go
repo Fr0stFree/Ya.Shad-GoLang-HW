@@ -51,6 +51,7 @@ func recoverFromNegativeCounterPanic(t *testing.T) {
 }
 
 func TestNoop(t *testing.T) {
+	t.Parallel()
 	wg1 := New()
 	wg1.Wait()
 
