@@ -106,3 +106,9 @@ issues:
         - funlen
         - gocognit
         - gocyclo
+
+    # Игнорировать G404 (weak random) в тестах - детерминированная случайность нужна для воспроизводимости
+    - path: _test\.go
+      linters:
+        - gosec
+      text: "G404"
