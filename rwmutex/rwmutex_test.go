@@ -42,7 +42,6 @@ func doTestParallelReaders(numReaders, gomaxprocs int) {
 }
 
 func TestParallelReaders(t *testing.T) {
-	t.Parallel()
 	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(-1))
 	doTestParallelReaders(1, 4)
 	doTestParallelReaders(3, 4)
@@ -121,7 +120,6 @@ func TestRWMutexReadWrite(t *testing.T) {
 }
 
 func TestRWMutex(t *testing.T) {
-	t.Parallel()
 	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(-1))
 	n := 1000
 	if testing.Short() {
@@ -140,7 +138,6 @@ func TestRWMutex(t *testing.T) {
 }
 
 func TestWriteWriteReadDeadlock(t *testing.T) {
-	t.Parallel()
 	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(-1))
 	runtime.GOMAXPROCS(2)
 	// Number of active readers + 10000 * number of active writers.
