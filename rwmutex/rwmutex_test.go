@@ -1,3 +1,4 @@
+// Package rwmutex implements a reader/writer mutual exclusion lock.
 package rwmutex
 
 import (
@@ -41,6 +42,7 @@ func doTestParallelReaders(numReaders, gomaxprocs int) {
 }
 
 func TestParallelReaders(t *testing.T) {
+	t.Parallel()
 	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(-1))
 	doTestParallelReaders(1, 4)
 	doTestParallelReaders(3, 4)
@@ -55,7 +57,8 @@ func reader(rwm *RWMutex, numIterations int, activity *int32, cdone chan bool) {
 			rwm.RUnlock()
 			panic(fmt.Sprintf("wlock(%d)\n", n))
 		}
-		for i := 0; i < 100; i++ {
+		for range 100 {
+			runtime.Gosched() // Busy work to hold the lock
 		}
 		atomic.AddInt32(activity, -1)
 		rwm.RUnlock()
@@ -71,7 +74,8 @@ func writer(rwm *RWMutex, numIterations int, activity *int32, cdone chan bool) {
 			rwm.Unlock()
 			panic(fmt.Sprintf("wlock(%d)\n", n))
 		}
-		for i := 0; i < 100; i++ {
+		for range 100 {
+			runtime.Gosched() // Busy work to hold the lock
 		}
 		atomic.AddInt32(activity, -10000)
 		rwm.Unlock()
@@ -117,6 +121,7 @@ func TestRWMutexReadWrite(t *testing.T) {
 }
 
 func TestRWMutex(t *testing.T) {
+	t.Parallel()
 	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(-1))
 	n := 1000
 	if testing.Short() {
@@ -135,6 +140,7 @@ func TestRWMutex(t *testing.T) {
 }
 
 func TestWriteWriteReadDeadlock(t *testing.T) {
+	t.Parallel()
 	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(-1))
 	runtime.GOMAXPROCS(2)
 	// Number of active readers + 10000 * number of active writers.
