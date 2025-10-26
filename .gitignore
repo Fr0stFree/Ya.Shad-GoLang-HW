@@ -1,5 +1,6 @@
 .idea
 *.swp
 .vscode/
-
+.CLAUDE
+CLAUDE.md
 /example/
