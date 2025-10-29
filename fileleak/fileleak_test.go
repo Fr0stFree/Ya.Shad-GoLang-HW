@@ -61,7 +61,7 @@ func TestFileLeak_OpenFile(t *testing.T) {
 func TestFileLeak_AlwaysOpenFile(t *testing.T) {
 	f, err := os.Open("/proc/self/exe")
 	require.NoError(t, err)
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	checkLeak(t, false, func() {})
 }
@@ -69,7 +69,7 @@ func TestFileLeak_AlwaysOpenFile(t *testing.T) {
 func TestFileLeak_ReopenFile(t *testing.T) {
 	f, err := os.Open("/proc/self/exe")
 	require.NoError(t, err)
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	checkLeak(t, true, func() {
 		_ = f.Close()
@@ -98,7 +98,7 @@ func TestFileLeak_PipeNoLeak(t *testing.T) {
 
 func TestFileLeak_SocketLeak(t *testing.T) {
 	var conn net.Listener
-	defer func() { conn.Close() }()
+	defer func() { _ = conn.Close() }()
 
 	checkLeak(t, true, func() {
 		addr, err := testtool.GetFreePort()
@@ -122,7 +122,7 @@ func TestFileLeak_SocketNoLeak(t *testing.T) {
 
 func TestFileLeak_DupLeak(t *testing.T) {
 	var fd int
-	defer syscall.Close(fd)
+	defer func() { _ = syscall.Close(fd) }()
 
 	checkLeak(t, true, func() {
 		var err error

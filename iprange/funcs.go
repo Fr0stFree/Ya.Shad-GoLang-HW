@@ -47,10 +47,10 @@ func streamRange(lower, upper net.IP) chan net.IP {
 			for i := 3; i >= 0; i-- {
 				if rangeMask[i] > 0 {
 					if mask[i] < rangeMask[i] {
-						mask[i] = mask[i] + 1
+						mask[i]++
 						break
 					} else {
-						mask[i] = mask[i] % rangeMask[i]
+						mask[i] %= rangeMask[i]
 						if i < 1 {
 							break
 						}
