@@ -77,7 +77,7 @@ func ListTestDirs(t *testing.T, path string) []string {
 	files, err := os.ReadDir(path)
 	require.NoError(t, err)
 
-	var names []string
+	names := make([]string, 0, len(files))
 	for _, f := range files {
 		if !f.IsDir() {
 			continue

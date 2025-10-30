@@ -373,8 +373,7 @@ ipdefault:
 
 		/* look through exception table */
 		xi := 0
-		for ipExca[xi+0] != -1 || ipExca[xi+1] != ipstate {
-			xi += 2
+		for ; ipExca[xi+0] != -1 || ipExca[xi+1] != ipstate; xi += 2 {
 		}
 		for xi += 2; ; xi += 2 {
 			ipn = ipExca[xi+0]
@@ -478,8 +477,8 @@ ipdefault:
 	case 2:
 		ipDollar = ipS[ippt-3 : ippt+1]
 		{
-			ipVAL.result = ipDollar[1].result
-			ipVAL.result = append(ipVAL.result, ipDollar[3].addrRange)
+			// nolint:gocritic
+			ipVAL.result = append(ipDollar[1].result, ipDollar[3].addrRange)
 			iplex.(*ipLex).output = ipVAL.result
 		}
 	case 5:
