@@ -62,7 +62,7 @@ func (s *InMemoryStorage) GetAll() ([]*Todo, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	var out []*Todo
+	out := make([]*Todo, 0, len(s.todos))
 	for _, todo := range s.todos {
 		out = append(out, todo)
 	}
