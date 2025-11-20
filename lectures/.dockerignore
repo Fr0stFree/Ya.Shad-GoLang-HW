@@ -1,0 +1,64 @@
+# .dockerignore - исключаем файлы из Docker build context
+#
+# Это ускоряет сборку образа и уменьшает его размер, исключая
+# файлы которые не нужны для работы present сервера
+#
+# Синтаксис аналогичен .gitignore
+
+# Git директория и файлы
+.git/
+.gitignore
+.gitattributes
+
+# Docker файлы (не нужны внутри контейнера)
+Dockerfile
+docker-compose.yaml
+docker-compose.yml
+.dockerignore
+
+# IDE и редакторы
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Логи и временные файлы
+*.log
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Документация и метафайлы (если не нужны для презентаций)
+README.md
+LICENSE
+CONTRIBUTING.md
+
+# Бэкапы
+*.bak
+*.backup
+
+# Compiled binaries (если есть)
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test files (обычно не нужны в презентации)
+*_test.go
+testdata/
+
+# CI/CD конфигурация
+.gitlab-ci.yml
+.github/
+.circleci/
+
+# Кэши и зависимости (если есть)
+vendor/
+node_modules/
+
+# Системные файлы
+Thumbs.db
+Desktop.ini

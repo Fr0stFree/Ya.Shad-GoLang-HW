@@ -3,7 +3,25 @@ Modules
 
 Арсений Балобанов
 
-* Modules
+* Modules: Зачем нужны?
+
+*Проблемы*до*Go*modules:*
+
+- GOPATH — все проекты в одном месте
+- Нет версионирования зависимостей
+- `go get` всегда скачивал последнюю версию
+- Невозможность иметь разные версии одной библиотеки
+- Сложность воспроизводимых сборок
+
+*Go*modules*решают:*
+
+- ✓ Каждый проект — независимый модуль
+- ✓ Явное указание версий зависимостей
+- ✓ Воспроизводимые сборки (go.sum)
+- ✓ Поддержка semantic versioning
+- ✓ Module proxy для надежности
+
+* Modules: Основные понятия
 
   # go mod init github.com/verytable/hello
   go: creating new go.mod: module github.com/verytable/hello
@@ -12,9 +30,13 @@ Modules
 
   go 1.22.0
 
-- *package* — набор исходных файлов из одной директории, которые компилируются вместе
-- *module* — набор пакетов, которые релизятся вместе
-- github.com/verytable/hello — *module*path*, префикс всех пакетов модуля
+*Ключевые*термины:*
+
+- *package* — набор .go файлов из одной директории, компилируются вместе
+- *module* — набор пакетов с единой версией, релизятся вместе
+- *module*path* — `github.com/verytable/hello` — префикс всех пакетов модуля
+- *go.mod* — манифест модуля (аналог package.json, requirements.txt)
+- *go.sum* — файл с хешами зависимостей для проверки целостности
 
 * Modules
 
@@ -129,13 +151,33 @@ Install binary.
 
   require github.com/google/go-cmp v0.6.0
 
-* Modules
+* go mod tidy: Детали работы
 
-- *go*mod*tidy* makes sure go.mod matches the source code in the module
+`go mod tidy` — самая важная команда!
 
-`go`mod`help`tidy` для подробностей.
+*Что*делает:*
 
-* Modules
+1. Добавляет все зависимости из import statements
+2. Удаляет неиспользуемые зависимости из go.mod
+3. Обновляет go.sum с криптографическими хешами
+4. Организует indirect dependencies
+
+*Когда*запускать:*
+
+- После добавления новых импортов
+- После удаления кода с импортами
+- Перед git commit
+- После `go get`
+
+*Best*practice:*
+
+  # Pre-commit hook
+  #!/bin/sh
+  go mod tidy
+  go mod verify
+  git diff --exit-code go.mod go.sum || exit 1
+
+* Modules: $GOPATH/pkg/mod
 
 Исходный код модулей хранится в *$GOPATH/pkg/mod*.
 
@@ -474,8 +516,320 @@ Vanity import
       </body>
   </html>
 
+* Go Workspaces (Go 1.18+)
+
+*Проблема:* работа с несколькими модулями одновременно
+
+Раньше: `replace` директивы в каждом go.mod
+
+Теперь: *go.work* файл для workspace
+
+  # go work init ./hello ./world
+  # cat go.work
+  go 1.22.0
+
+  use (
+      ./hello
+      ./world
+  )
+
+*Преимущества:*
+
+- Изменения в одном модуле сразу видны в другом
+- Не нужны replace директивы
+- go.work не коммитится в git
+
+* Go Workspaces: Пример
+
+Структура проекта:
+
+  project/
+  ├── go.work
+  ├── service/
+  │   ├── go.mod
+  │   └── main.go
+  └── library/
+      ├── go.mod
+      └── lib.go
+
+  # cd project
+  # go work init ./service ./library
+
+Теперь service может импортировать library без replace!
+
+  // service/main.go
+  import "example.com/library"  // просто работает!
+
+* Retracted Versions
+
+Удаление плохих версий из циркуляции:
+
+  # cat go.mod
+  module github.com/example/mylib
+
+  go 1.22.0
+
+  retract (
+      v1.0.5 // Содержит критическую уязвимость CVE-2023-xxxxx
+      v1.0.4 // Сломана сборка на Windows
+      [v1.0.0, v1.0.3] // Несовместимое API
+  )
+
+*Что*происходит:*
+
+- `go get` выдаст предупреждение при попытке скачать retracted версию
+- `go list -m -versions` покажет но пометит как retracted
+- Пользователи увидят комментарий с причиной
+
+* Private Modules: GOPRIVATE
+
+Работа с приватными репозиториями:
+
+  # go env -w GOPRIVATE=github.com/mycompany/*
+  # go env -w GOPRIVATE=gitlab.com/mycompany/*,github.com/mycompany/*
+
+*Что*делает:*
+
+- Пропускает module proxy
+- Не проверяет checksum database
+- Идет напрямую в VCS (git)
+
+Настройка доступа:
+
+  # Git credentials
+  git config --global url."https://<token>@github.com/".insteadOf "https://github.com/"
+
+  # SSH keys
+  git config --global url."git@github.com:".insteadOf "https://github.com/"
+
+* Private Modules: Полный пример
+
+  # 1. Настроить GOPRIVATE
+  export GOPRIVATE=github.com/mycompany/*
+
+  # 2. Настроить git credentials
+  git config --global url."https://oauth2:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
+
+  # 3. Проверить
+  go get github.com/mycompany/private-lib@v1.2.3
+
+*CI/CD*пример*(GitLab):*
+
+  before_script:
+    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.com/".insteadOf "https://gitlab.com/"
+    - export GOPRIVATE=gitlab.com/mycompany/*
+
+* Dependency Management Best Practices
+
+*Основные*правила:*
+
+1. *Всегда*коммитьте*go.sum* - это ваша гарантия безопасности
+2. *Запускайте*go*mod*tidy* перед коммитом
+3. *Фиксируйте*версии* - избегайте `latest`
+4. *Обновляйте*регулярно* - но осторожно
+5. *Проверяйте*лицензии* зависимостей
+
+*Команды*для*обслуживания:*
+
+  # Посмотреть устаревшие зависимости
+  go list -u -m all
+
+  # Обновить одну зависимость
+  go get github.com/pkg/errors@v0.9.1
+
+  # Обновить все minor/patch
+  go get -u=patch ./...
+
+  # Найти уязвимости
+  go install golang.org/x/vuln/cmd/govulncheck@latest
+  govulncheck ./...
+
+* Версионирование: Semantic Versioning
+
+*Формат:* v<MAJOR>.<MINOR>.<PATCH>
+
+- *PATCH* (v1.0.1) — bug fixes, обратно совместимо
+- *MINOR* (v1.1.0) — новая функциональность, обратно совместимо
+- *MAJOR* (v2.0.0) — breaking changes, несовместимо с v1
+
+*Специальные*версии:*
+
+- v0.x.x — пре-релиз, нет гарантий совместимости
+- v1.0.0 — первая стабильная версия
+- v2.0.0+ — нужен /v2 в import path
+
+*Псевдо-версии:*
+
+  v0.0.0-20240101120000-abcdef123456
+  │      │                  └─ commit hash
+  │      └─ timestamp
+  └─ базовая версия
+
+* go mod commands: Шпаргалка
+
+*Основные:*
+
+  go mod init <module>    # создать новый модуль
+  go mod tidy             # обновить зависимости
+  go mod download         # скачать зависимости
+  go mod verify           # проверить хеши в go.sum
+  go mod vendor           # создать vendor/
+
+*Информация:*
+
+  go list -m all          # все зависимости
+  go list -m -u all       # с доступными обновлениями
+  go mod graph            # граф зависимостей
+  go mod why <package>    # почему используется пакет
+
+*Редактирование:*
+
+  go mod edit -require=pkg@v1.0.0
+  go mod edit -replace=old=new
+  go mod edit -dropreplace=old
+
+* Troubleshooting: Распространенные проблемы
+
+*Проблема:* `no required module provides package`
+
+  # go get не может найти пакет
+  go: module example.com/pkg: no matching versions
+
+*Решения:*
+
+  # 1. Проверить import path
+  go list -m example.com/pkg
+
+  # 2. Принудительно обновить
+  go get -u example.com/pkg
+
+  # 3. Очистить кеш
+  go clean -modcache
+
+*Проблема:* `verifying module: checksum mismatch`
+
+  # Хеш в go.sum не совпадает
+  verifying example.com/pkg@v1.0.0: checksum mismatch
+
+*Решения:*
+
+  # 1. Пересоздать go.sum
+  rm go.sum && go mod tidy
+
+  # 2. Проверить не была ли атака
+  go mod verify
+
+* Troubleshooting: Очистка и reset
+
+*Очистка*кеша:*
+
+  # Удалить все загруженные модули
+  go clean -modcache
+
+  # Удалить build cache
+  go clean -cache
+
+  # Удалить все (опасно!)
+  go clean -modcache -cache -testcache
+
+*Reset*модуля:*
+
+  # 1. Удалить файлы модуля
+  rm go.mod go.sum
+
+  # 2. Пересоздать
+  go mod init example.com/myapp
+  go mod tidy
+
+*Проверка*целостности:*
+
+  # Проверить что все модули не изменены
+  go mod verify
+
+  # Вывод: "all modules verified" ✓
+
+* Практические примеры: Monorepo
+
+Структура monorepo с несколькими модулями:
+
+  mycompany/
+  ├── go.work
+  ├── services/
+  │   ├── api/
+  │   │   ├── go.mod
+  │   │   └── main.go
+  │   └── worker/
+  │       ├── go.mod
+  │       └── main.go
+  └── libs/
+      ├── database/
+      │   ├── go.mod
+      │   └── db.go
+      └── logger/
+          ├── go.mod
+          └── log.go
+
+  # go.work
+  go 1.22.0
+  use (
+      ./services/api
+      ./services/worker
+      ./libs/database
+      ./libs/logger
+  )
+
+* Практические примеры: CI/CD Pipeline
+
+*.gitlab-ci.yml:*
+
+  test:
+    image: golang:1.22
+    before_script:
+      - go mod download
+      - go mod verify
+    script:
+      - go test -v -race ./...
+      - go vet ./...
+
+  build:
+    script:
+      - go build -o app .
+      - ./app --version
+
+*GitHub*Actions:*
+
+  - name: Test
+    run: |
+      go mod download
+      go test -race -coverprofile=coverage.txt ./...
+
+  - name: Check vulnerabilities
+    run: |
+      go install golang.org/x/vuln/cmd/govulncheck@latest
+      govulncheck ./...
+
 * Ссылки:
 
 .link https://golang.org/cmd/go/ — go cmd
 .link https://www.youtube.com/watch?v=F8nrpe0XWRg — ▶️ Go with Versions, Russ Cox
+.link https://go.dev/blog/using-go-modules — Using Go Modules
+.link https://go.dev/ref/mod — Go Modules Reference
+.link https://go.dev/doc/modules/managing-dependencies — Managing Dependencies
 .link https://play-with-go.dev/ — play-with-go
+.link https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck — govulncheck tool
+
+* Итоги
+
+*Что*мы*узнали:*
+
+- Module system — современный способ управления зависимостями
+- go.mod и go.sum — основа воспроизводимых сборок
+- Semantic versioning — правила версионирования
+- go mod tidy — главная команда для работы с модулями
+- Workspaces — для работы с несколькими модулями
+- Private modules — работа с приватными репозиториями
+- Best practices — безопасность и обслуживание
+
+*Главное:* всегда запускайте `go mod tidy` и коммитьте `go.sum`!
+
+*Спасибо*за*внимание!*

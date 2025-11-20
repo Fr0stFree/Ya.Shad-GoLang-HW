@@ -1,7 +1,69 @@
-version: "3"
+# Docker Compose конфигурация для Go лекций
+#
+# Запуск презентационного сервера с поддержкой live reload для разработки
+#
+# Использование:
+#   docker-compose up          # запустить в foreground
+#   docker-compose up -d       # запустить в background (daemon)
+#   docker-compose down        # остановить и удалить контейнеры
+#   docker-compose logs -f     # смотреть логи
+#   docker-compose restart     # перезапустить сервисы
+#
+# После запуска откройте: http://localhost:8080
+#
+# Примечание: version устарел в Docker Compose v2 и больше не требуется
+
 services:
+  # Сервис для запуска present - инструмента презентаций Go
   present:
+    # Имя контейнера (вместо автогенерированного)
+    container_name: go-lectures-present
+
+    # Собираем образ из локального Dockerfile
     build:
       context: .
+      # Опционально: можно указать другой Dockerfile
+      # dockerfile: Dockerfile
+
+    # Пробрасываем порт 8080 из контейнера на localhost
+    # Формат: "HOST:CONTAINER"
+    # 127.0.0.1 - доступ только с локальной машины (безопасность)
     ports:
       - "127.0.0.1:8080:8080"
+
+    # Монтируем текущую директорию в контейнер для live reload
+    # Изменения в .slide и .go файлах будут видны без пересборки
+    volumes:
+      # Монтируем все лекции
+      - .:/lectures:ro
+      # :ro = read-only mount для безопасности
+      # Present не должен изменять файлы на хосте
+
+    # Переменные окружения (опционально)
+    environment:
+      # Можно добавить переменные если нужно
+      - TZ=Europe/Moscow
+
+    # Политика перезапуска
+    # unless-stopped: перезапускать всегда кроме явной остановки
+    restart: unless-stopped
+
+    # Health check для проверки что сервис работает
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    # Логирование
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Опционально: можно добавить сети для изоляции
+# networks:
+#   lectures:
+#     driver: bridge

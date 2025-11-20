@@ -49,6 +49,30 @@ Concurrency with Shared Memory
 
 Ошибка в этом примере называется _data_race_.
 
+* Example Bank: Что может пойти не так?
+
+Операция `balance = balance + amount` это *три*шага*:
+
+  1. Прочитать balance в регистр         // load
+  2. Прибавить amount к регистру          // add
+  3. Записать регистр обратно в balance   // store
+
+При одновременном доступе возможно:
+
+  // Начальное значение: balance = 0
+  // Alice deposits 200, Bob deposits 100
+
+  Горутина Alice          Горутина Bob           balance
+  ----------------------------------------------------------
+  load balance (0)
+                          load balance (0)
+  add 200 → 200
+                          add 100 → 100
+  store 200                                      200
+                          store 100              100 ❌
+
+Итого: balance = 100, хотя должно быть 300! *Деньги*потеряны!*
+
 * Data Race breaks memory safety
 
   var x []int
@@ -155,6 +179,31 @@ Concurrency with Shared Memory
       return balance
   }
 
+* sync.RWMutex: Когда использовать?
+
+`RWMutex` полезен когда *чтений*намного*больше*чем*записей*.
+
+Пример: конфигурация приложения
+
+  type Config struct {
+      mu     sync.RWMutex
+      values map[string]string
+  }
+
+  func (c *Config) Get(key string) string {
+      c.mu.RLock()         // Много читателей могут работать одновременно
+      defer c.mu.RUnlock()
+      return c.values[key]
+  }
+
+  func (c *Config) Set(key, value string) {
+      c.mu.Lock()          // Только один писатель
+      defer c.mu.Unlock()
+      c.values[key] = value
+  }
+
+*Производительность:* 1000 чтений параллельно vs 1 чтение при обычном Mutex.
+
 * Memory Order
 
   var x, y int
@@ -232,6 +281,32 @@ This definition provides the same semantics as C++'s sequentially consistent ato
   // CompareAndSwap executes the compare-and-swap operation for x.
   func (x *Value) CompareAndSwap(old, new any) (swapped bool)
 
+* Atomic: Счётчик без мьютекса
+
+Простой concurrent счётчик:
+
+  type Counter struct {
+      value atomic.Int64
+  }
+
+  func (c *Counter) Inc() {
+      c.value.Add(1)
+  }
+
+  func (c *Counter) Get() int64 {
+      return c.value.Load()
+  }
+
+  // Использование из нескольких горутин - безопасно!
+  counter := &Counter{}
+  for i := 0; i < 100; i++ {
+      go counter.Inc()
+  }
+  fmt.Println(counter.Get()) // Всегда 100
+
+*Когда*использовать:* простые счётчики, флаги, ID генераторы.
+*Когда*НЕ*использовать:* сложная логика требующая нескольких полей (используйте Mutex).
+
 * Config update
 
   func main() {
@@ -257,6 +332,32 @@ This definition provides the same semantics as C++'s sequentially consistent ato
   	  	  	  }
   	  	  }()
   	  }
+  }
+
+* atomic.Value: Реальный пример
+
+Обновление конфигурации без перезапуска сервера:
+
+  var config atomic.Value
+
+  func init() {
+      config.Store(loadConfigFromFile())
+  }
+
+  func handleRequest(w http.ResponseWriter, r *http.Request) {
+      cfg := config.Load().(*Config) // Читаем текущую конфигурацию
+
+      if cfg.Enabled {
+          // Обрабатываем запрос согласно конфигурации
+      }
+  }
+
+  func reloadConfig(w http.ResponseWriter, r *http.Request) {
+      newCfg := loadConfigFromFile()
+      config.Store(newCfg) // Атомарно заменяем конфигурацию
+
+      // Все worker горутины увидят новую конфигурацию при следующем Load
+      w.Write([]byte("Config reloaded"))
   }
 
 * Ленивая инициализация sync.Once.
@@ -303,21 +404,124 @@ This definition provides the same semantics as C++'s sequentially consistent ato
       return icons[name]
   }
 
-* Concurrent cache
+* Concurrent cache: Проблема
+
+Хотим кешировать результаты дорогих вычислений (HTTP запросы, database queries, etc).
+
+Требования:
+
+- Каждое значение вычисляется только один раз
+- Несколько горутин могут одновременно запрашивать разные ключи
+- Несколько горутин могут одновременно запрашивать один ключ
+- Потокобезопасность (нет data race)
+
+* Concurrent cache v1: Небезопасная версия
 
 .play memo1/memo.go /type Memo/,/OMIT/
 
-* Concurrent cache
+Проблемы:
+
+- ❌ *Data*race* при одновременном доступе к `map`
+- ❌ Программа может упасть с "concurrent map read and write"
+- ✓ Простая реализация
+- ✓ Быстрая если использовать из одной горутины
+
+* Concurrent cache v2: Mutex
 
 .play memo2/memo.go /type Memo/,/OMIT/
 
-* Concurrent cache
+Проблемы:
+
+- ✓ Потокобезопасно (нет data race)
+- ❌ *Плохая*производительность* - все запросы последовательны
+- ❌ Даже запросы к *разным*ключам* блокируют друг друга
+- ❌ Вызов `f()` происходит *под*мьютексом*
+
+* Concurrent cache v2: Производительность
+
+Что происходит при параллельных запросах к *разным* ключам:
+
+  // Горутина 1          // Горутина 2          // Горутина 3
+  Get("url1")           Get("url2")           Get("url3")
+  mu.Lock() ✓
+  f("url1") [2s] →→→    mu.Lock() ⏳ ждет    mu.Lock() ⏳ ждет
+  mu.Unlock()
+                        mu.Lock() ✓
+                        f("url2") [2s] →→→    mu.Lock() ⏳ ждет
+                        mu.Unlock()
+                                              mu.Lock() ✓
+                                              f("url3") [2s] →→→
+                                              mu.Unlock()
+
+Итого: *6*секунд* вместо возможных *2*секунд* параллельно!
+
+* Concurrent cache v3: Улучшенная версия
 
 .play memo3/memo.go /func \(memo/,/OMIT/
 
-* Concurrent cache
+Улучшения:
+
+- ✓ Потокобезопасно
+- ✓ Запросы к *разным*ключам* выполняются параллельно
+- ✓ Вызов `f()` происходит *без*мьютекса*
+- ❌ *Дублирование*работы* для одного ключа
+
+* Concurrent cache v3: Проблема дублирования
+
+Что происходит при параллельных запросах к *одному* ключу:
+
+  // Время →    0s           1s           2s
+  // Горутина 1:
+  Get("url")
+  mu.Lock()
+  res, ok := cache["url"]  // false
+  mu.Unlock()
+  f("url") [2s] →→→→→→→→→→→→→→→→→→→→→→→→→  ✓
+
+  // Горутина 2 (одновременно):
+  Get("url")
+  mu.Lock()
+  res, ok := cache["url"]  // false! (горутина 1 еще не записала)
+  mu.Unlock()
+  f("url") [2s] →→→→→→→→→→→→→→→→→→→→→→→→→  ✓ дублирование!
+
+Функция `f("url")` вызвана *дважды* - тратим ресурсы впустую!
+
+* Concurrent cache v4: Оптимальное решение
 
 .play memo4/memo.go /type entry/,/OMIT/
+
+Решение:
+
+- ✓ Потокобезопасно
+- ✓ Запросы к *разным*ключам* параллельны
+- ✓ Запросы к *одному*ключу* *НЕ*дублируются*
+- ✓ Первая горутина вычисляет, остальные ждут через канал
+- ✓ *Оптимально* по производительности
+
+* Concurrent cache v4: Как это работает
+
+Используем канал `ready chan struct{}` для координации:
+
+  // Горутина 1 (первая):
+  Get("url")
+  mu.Lock()
+  e := cache["url"]        // nil
+  e = &entry{ready: make(chan struct{})}
+  cache["url"] = e
+  mu.Unlock()
+  e.value, e.err = f("url") // вычисляем БЕЗ мьютекса
+  close(e.ready)            // оповещаем всех ожидающих
+
+  // Горутина 2 (повторная):
+  Get("url")
+  mu.Lock()
+  e := cache["url"]        // нашли entry от горутины 1!
+  mu.Unlock()
+  <-e.ready                // ждем закрытия канала
+  return e.value           // используем готовый результат
+
+Функция `f("url")` вызвана *один*раз*, все получили результат!
 
 * sync.Map
 
@@ -380,6 +584,44 @@ This definition provides the same semantics as C++'s sequentially consistent ato
 * Как сделать sync.Map без двойного вычисления?
 
 .play synconce/map.go /type result/,/OMIT/
+
+* sync.Map + sync.Once: Объяснение
+
+Комбинация `sync.Map` и `sync.Once` решает проблему дублирования:
+
+  // 1. Каждый entry содержит свой sync.Once
+  type entry struct {
+      res *result
+      sync.Once
+  }
+
+  // 2. LoadOrStore атомарно вставляет ИЛИ возвращает существующий
+  old, loaded := cache.LoadOrStore(key, myEntry)
+
+  // 3. sync.Once гарантирует однократное выполнение
+  myEntry.Do(func() {
+      myEntry.res = do(key)  // вызовется только один раз
+  })
+
+Преимущества: проще чем memo4, но менее гибко (нет контроля над ошибками).
+
+* sync.Map: Когда использовать?
+
+sync.Map оптимизирован для специфичных паттернов:
+
+*Используйте*sync.Map*когда:*
+
+- Ключи записываются *один*раз* и потом только читаются (append-only)
+- Разные горутины работают с *непересекающимися* наборами ключей
+- Нужна *максимальная*производительность* чтения без лока
+
+*НЕ*используйте*sync.Map*когда:*
+
+- Частые записи и удаления ключей
+- Работа с малым фиксированным набором ключей
+- Нужна итерация по всем ключам
+
+*Для*большинства*случаев:* `map` + `sync.RWMutex` проще и быстрее!
 
 * sync.Cond
 
@@ -483,18 +725,230 @@ This definition provides the same semantics as C++'s sequentially consistent ato
   golang.org/x/sync/errgroup.WithContext(ctx context.Context) (*Group, context.Context)
   ...
 
-Быстрый пример:
-  
-  ctx, cancel := context.WithTimeout(context.Background(), 1 * time.Second)
-  defer cancel()
+* context: HTTP запрос с таймаутом
 
-  req, _ := http.NewRequestWithContext(ctx, "GET", "http://loremipsum.com", nil)
-  resp, err := http.DefaultClient.Do(req)
-  if err != nil {
-    // возможно тут будет DeadlineExceeded
+Типичный пример - HTTP запрос к внешнему API:
+
+  func fetchUserData(userID string) (*User, error) {
+      // Таймаут 2 секунды на весь запрос
+      ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+      defer cancel()
+
+      url := fmt.Sprintf("https://api.example.com/users/%s", userID)
+      req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
+
+      resp, err := http.DefaultClient.Do(req)
+      if err != nil {
+          if errors.Is(err, context.DeadlineExceeded) {
+              return nil, fmt.Errorf("API timeout after 2s")
+          }
+          return nil, err
+      }
+      defer resp.Body.Close()
+
+      var user User
+      json.NewDecoder(resp.Body).Decode(&user)
+      return &user, nil
+  }
+
+* context: Database запрос с отменой
+
+Отменяем долгий database запрос если клиент отключился:
+
+  func handleSearch(w http.ResponseWriter, r *http.Request) {
+      ctx := r.Context() // получаем контекст из HTTP запроса
+
+      query := r.URL.Query().Get("q")
+
+      // Если клиент закрыл соединение, ctx.Done() закроется
+      rows, err := db.QueryContext(ctx,
+          "SELECT * FROM products WHERE name LIKE ? LIMIT 1000",
+          "%"+query+"%")
+      if err != nil {
+          if errors.Is(err, context.Canceled) {
+              // Клиент отключился - не тратим ресурсы
+              return
+          }
+          http.Error(w, err.Error(), 500)
+          return
+      }
+      defer rows.Close()
+
+      // ... обработка результатов
+  }
+
+* context: Graceful shutdown
+
+Остановка background worker при выключении сервера:
+
+  func main() {
+      ctx, cancel := context.WithCancel(context.Background())
+
+      // Worker горутина
+      go processQueue(ctx, jobQueue)
+
+      // Ждем сигнал остановки
+      sigChan := make(chan os.Signal, 1)
+      signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+      <-sigChan
+
+      log.Println("Shutting down...")
+      cancel() // Отменяем контекст - worker остановится
+
+      // Даем время на graceful shutdown
+      time.Sleep(5 * time.Second)
+  }
+
+  func processQueue(ctx context.Context, queue <-chan Job) {
+      for {
+          select {
+          case <-ctx.Done():
+              log.Println("Worker stopped")
+              return
+          case job := <-queue:
+              processJob(ctx, job)
+          }
+      }
   }
 
 * context и передача значений
 
 .code context/value/value.go /type/,/OMIT/
 .code context/value/value.go /func main/,/}/
+
+* context.Value: Реальный пример
+
+Передача request ID для трассировки:
+
+  // Middleware добавляет request ID в контекст
+  func RequestIDMiddleware(next http.Handler) http.Handler {
+      return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+          requestID := generateRequestID()
+          ctx := context.WithValue(r.Context(), requestIDKey{}, requestID)
+          next.ServeHTTP(w, r.WithContext(ctx))
+      })
+  }
+
+  // В любом месте приложения можем получить request ID
+  func processOrder(ctx context.Context, orderID string) error {
+      requestID, _ := ctx.Value(requestIDKey{}).(string)
+      log.Printf("[%s] Processing order %s", requestID, orderID)
+
+      // Передаем контекст дальше
+      return db.QueryContext(ctx, "INSERT INTO orders ...")
+  }
+
+*Важно:* используйте приватный тип для ключа (не string!) чтобы избежать коллизий.
+
+* Best Practices: Выбор инструмента синхронизации
+
+Как выбрать между Mutex, RWMutex, Atomic, Channel?
+
+*Используйте*каналы*когда:*
+
+- Передача данных между горутинами
+- Паттерн producer-consumer
+- Пайплайны обработки данных
+
+*Используйте*Mutex*когда:*
+
+- Защита shared state (map, struct с полями)
+- Короткие критические секции
+- Примерно равное количество чтений и записей
+
+* Best Practices: Выбор инструмента синхронизации (2)
+
+*Используйте*RWMutex*когда:*
+
+- Чтений намного больше чем записей (100:1 или больше)
+- Критические секции достаточно длинные
+- Данные читаются из многих горутин одновременно
+
+*Используйте*Atomic*когда:*
+
+- Простые счётчики, флаги, ID
+- Одна переменная (не struct с несколькими полями)
+- Нужна максимальная производительность
+
+*Используйте*sync.Once*когда:*
+
+- Ленивая инициализация
+- Гарантия однократного выполнения
+
+* Best Practices: Общие рекомендации
+
+*Правила*работы*с*конкурентностью:*
+
+1. *Избегайте*shared*state* - если можно обойтись каналами
+2. *Минимизируйте*критические*секции* - держите lock как можно меньше
+3. *Не*вызывайте*внешние*функции*под*локом* - они могут взять другой лок
+4. *Используйте*`defer`* - `defer mu.Unlock()` предотвращает deadlock
+5. *Документируйте* - комментируйте какой мьютекс что защищает
+6. *Тестируйте*с*`-race`* - детектор race conditions ваш друг
+
+* Best Practices: Типичные ошибки
+
+*Чего*НЕ*делать:*
+
+❌ *Копирование*mutex* - `mu := m.mu` скопирует значение, не защиту!
+
+  type Foo struct { mu sync.Mutex }
+  func (f Foo) Bar() { f.mu.Lock() } // ❌ копия!
+  func (f *Foo) Bar() { f.mu.Lock() } // ✓ правильно
+
+❌ *Блокировка*в*неправильном*порядке* - приводит к deadlock
+
+  mu1.Lock(); mu2.Lock()  // горутина 1
+  mu2.Lock(); mu1.Lock()  // горутина 2 → deadlock!
+
+❌ *Забыть*unlock* - используйте defer!
+
+  mu.Lock()
+  if err != nil { return err } // ❌ забыли unlock!
+  mu.Unlock()
+
+* Best Practices: Race Detector
+
+Go race detector - ваш главный инструмент:
+
+  go test -race ./...
+  go run -race main.go
+  go build -race
+
+Пример вывода:
+
+  ==================
+  WARNING: DATA RACE
+  Write at 0x00c0000b4010 by goroutine 7:
+    main.Deposit()
+        bank.go:10 +0x3e
+  Previous read at 0x00c0000b4010 by goroutine 6:
+    main.Balance()
+        bank.go:14 +0x2a
+  ==================
+
+*Всегда*запускайте*тесты*с*`-race`*перед*коммитом!*
+
+* Итоги
+
+Что мы узнали:
+
+- *Data*race* - главная опасность при работе с shared memory
+- *Mutex* - базовый примитив синхронизации
+- *RWMutex* - оптимизация для частых чтений
+- *Atomic* - для простых операций без блокировок
+- *sync.Once* - ленивая инициализация
+- *sync.Map* - специализированный concurrent map
+- *context* - отмена операций и передача метаданных
+
+*Главное:* используйте каналы где возможно, mutex где необходимо.
+
+* Полезные ссылки
+
+- [[https://go.dev/ref/mem][Go Memory Model]]
+- [[https://go.dev/blog/race-detector][Introducing the Go Race Detector]]
+- [[https://github.com/golang/go/wiki/MutexOrChannel][Mutex Or Channel?]]
+- [[https://go.dev/blog/context][Go Concurrency Patterns: Context]]
+- [[https://pkg.go.dev/sync][Package sync documentation]]
+
+*Спасибо*за*внимание!*
