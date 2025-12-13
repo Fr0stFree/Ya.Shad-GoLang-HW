@@ -58,7 +58,7 @@ func newTestScheduler(t *testing.T) *testScheduler {
 
 func (s *testScheduler) stop(t *testing.T) {
 	close(s.reset)
-	s.Scheduler.Stop()
+	s.Stop()
 	goleak.VerifyNone(t)
 }
 
