@@ -41,7 +41,7 @@ func (c slowCipher) Decrypt(_, _ []byte) {
 }
 
 func genKeys() [][]byte {
-	var keys [][]byte
+	keys := make([][]byte, 0, 128)
 	for i := range 128 {
 		keys = append(keys, make([]byte, 16))
 		_, _ = rand.Read(keys[i])
@@ -74,7 +74,7 @@ func benchCipher(b *testing.B, constructor func([][]byte) cipher.Block) {
 	c := constructor(keys)
 
 	const blocksLen = 1_000_000
-	var blocks [][]byte
+	blocks := make([][]byte, 0, blocksLen)
 	for range blocksLen {
 		src := make([]byte, 16)
 		_, _ = rand.Read(src)
