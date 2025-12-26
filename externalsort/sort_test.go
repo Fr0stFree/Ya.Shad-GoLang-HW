@@ -113,7 +113,7 @@ func TestSort(t *testing.T) {
 			require.NoError(t, err)
 			defer func() { _ = os.RemoveAll(tmpDir) }()
 
-			in, out := readTestCase(testCaseDir)
+			in, out := readTestCase(testCaseDir) //nolint:staticcheck // false positive: out is used below
 			in = copyFiles(t, in, tmpDir)
 
 			var buf bytes.Buffer
@@ -148,7 +148,7 @@ func listDirs(t *testing.T, dir string) []string {
 func copyFiles(t *testing.T, in []string, dir string) []string {
 	t.Helper()
 
-	var ret []string
+	ret := make([]string, 0, len(in))
 	for _, f := range in {
 		ret = append(ret, copyFile(t, f, dir))
 	}
