@@ -15,7 +15,7 @@ import (
 type Coordinator struct {
 }
 
-var defaultConfig = scheduler.Config{
+var _ = scheduler.Config{
 	CacheTimeout: time.Millisecond * 10,
 	DepsTimeout:  time.Millisecond * 100,
 }

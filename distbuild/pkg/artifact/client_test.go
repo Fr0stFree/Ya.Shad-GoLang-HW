@@ -17,7 +17,7 @@ import (
 
 func TestArtifactTransfer(t *testing.T) {
 	remoteCache := newTestCache(t)
-	localCache := newTestCache(t)
+	localCache := newTestCache(t) //nolint:staticcheck // false positive: localCache is used below
 
 	id := build.ID{0x01}
 

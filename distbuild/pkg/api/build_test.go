@@ -37,7 +37,7 @@ func newEnv(t *testing.T) (*env, func()) {
 
 	log := zaptest.NewLogger(t)
 
-	mux := http.NewServeMux()
+	mux := http.NewServeMux() //nolint:staticcheck // false positive: mux is used below
 
 	handler := api.NewBuildService(log, env.mock)
 	handler.Register(mux)

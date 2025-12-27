@@ -26,7 +26,7 @@ type env struct {
 
 func newEnv(t *testing.T) *env {
 	l := zaptest.NewLogger(t)
-	mux := http.NewServeMux()
+	mux := http.NewServeMux() //nolint:staticcheck // false positive: mux is used below
 
 	cache := newCache(t)
 

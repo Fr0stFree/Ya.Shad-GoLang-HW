@@ -23,7 +23,7 @@ func TestHeartbeat(t *testing.T) {
 
 	l := zaptest.NewLogger(t)
 	m := mock.NewMockHeartbeatService(ctrl)
-	mux := http.NewServeMux()
+	mux := http.NewServeMux() //nolint:staticcheck // false positive: mux is used below
 	api.NewHeartbeatHandler(l, m).Register(mux)
 
 	server := httptest.NewServer(mux)
