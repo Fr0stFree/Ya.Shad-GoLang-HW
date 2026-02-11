@@ -1,4 +1,4 @@
-FROM gitlab.manytask.org:5050/go/public-2025-fall/build:latest
+FROM gitlab.manytask.org:5050/go/public-2026-spring/build:latest
 
 COPY . /opt/shad
 

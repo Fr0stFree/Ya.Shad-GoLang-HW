@@ -1,7 +1,7 @@
 variables:
   GIT_STRATEGY: clone
-  REGISTRY: gitlab.manytask.org:5050/go/public-2025-fall
-  REPORT_URL: https://app.manytask.org/api/itmo-go-2025-fall/update_config
+  REGISTRY: gitlab.manytask.org:5050/go/public-2026-spring
+  REPORT_URL: https://app.manytask.org/api/go-2026-spring/update_config
 
 stages:
   - build-image
@@ -68,7 +68,7 @@ push-to-public:
       - REMOTE:
           # - git@gitlab.com:manytask/itmo/go/private.git
           # - git@gitlab.manytask.org:itmo/go/public-2025-fall.git
-          - git@gitlab.manytask.org:go/public-2025-fall.git
+          - git@gitlab.manytask.org:go/public-2026-spring.git
   only:
     - master
   before_script:

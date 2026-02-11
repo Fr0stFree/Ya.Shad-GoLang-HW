@@ -4,11 +4,11 @@ settings: # required
   course_name: go
 
   gitlab_base_url: https://gitlab.manytask.org
-  public_repo: go/public-2025-fall
-  students_group: go/students-2025-fall
+  public_repo: go/public-2026-spring
+  students_group: go/students-2026-spring
 
 ui:
-  task_url_template: https://gitlab.manytask.org/go/public-2025-fall/-/tree/master/$TASK_NAME
+  task_url_template: https://gitlab.manytask.org/go/students-2026-spring/$USER_NAME/-/tree/main/$TASK_NAME
 
   # optional, any number of links
   links:
@@ -23,10 +23,11 @@ deadlines:
 
   schedule:
     - group: Hello World
-      start: 2025-09-11 18:00
+      start: 2026-02-12 18:00
       steps:
-        0.3: 2025-10-01 00:00
-      end: 2025-10-01 00:00
+        0.3: 2026-03-04 00:00
+      end: 2026-03-04 00:00
+      enabled: true
       tasks:
         - task: sum
           score: 100
@@ -40,10 +41,11 @@ deadlines:
           score: 100
 
     - group: Basics
-      start: 2025-09-18 18:00 # Чт
+      start: 2026-02-19 18:00 # Чт
       steps:
-        0.3: 2025-09-26 23:59 # Чт ровно через неделю
-      end: 2025-10-02 17:59 # Чт ровно через 2 недели от start
+        0.3: 2026-02-27 23:59 # Чт ровно через неделю
+      end: 2026-03-05 17:59 # Чт ровно через 2 недели от start
+      enabled: false
       tasks:
         - task: hotelbusiness
           score: 100
@@ -59,11 +61,11 @@ deadlines:
           score: 100
 
     - group: Interfaces
-      start: 2025-09-25 18:00 # Чт (сразу после окончания Basics)
+      start: 2026-02-26 18:00 # Чт (сразу после окончания Basics)
       steps:
-        0.3: 2025-10-09 17:59 # Чт
-      end: 2025-10-16 17:59 # Чт
-      enabled: true
+        0.3: 2026-03-12 17:59 # Чт
+      end: 2026-03-19 17:59 # Чт
+      enabled: false
       tasks:
         - task: otp
           score: 100
@@ -79,11 +81,11 @@ deadlines:
           score: 100
 
     - group: Goroutines
-      start: 2025-10-16 18:00 # Чт
+      start: 2026-03-19 18:00 # Чт
       steps:
-        0.3: 2025-10-23 17:59 # Чт
-      end: 2025-10-26 23:59 # Вс
-      enabled: true
+        0.3: 2026-03-26 17:59 # Чт
+      end: 2026-03-29 23:59 # Вс
+      enabled: false
       tasks:
         - task: tour1
           score: 100
@@ -99,21 +101,21 @@ deadlines:
           score: 100
 
     - group: "[HW] Gitfame"
-      start: 2025-10-16 18:00 # Чт
+      start: 2026-03-19 18:00 # Чт
       # Для большого ДЗ steps часто не нужен или срок больше
-      end: 2025-11-06 23:59 # Оставляем вашу исходную дату, т.к. это большой проект
-      enabled: true
+      end: 2026-04-09 23:59 # Оставляем вашу исходную дату, т.к. это большой проект
+      enabled: false
       is_large: true
       tasks:
         - task: gitfame
           score: 0
 
     - group: Testing
-      start: 2025-10-23 18:00 # Чт
+      start: 2026-03-26 18:00 # Чт
       steps:
-        0.3: 2025-10-30 17:59 # Чт
-      end: 2025-11-06 17:59 # Чт (обратите внимание, сдвинулось на неделю из-за правила)
-      enabled: true
+        0.3: 2026-04-02 17:59 # Чт
+      end: 2026-04-09 17:59 # Чт (обратите внимание, сдвинулось на неделю из-за правила)
+      enabled: false
       tasks:
         - task: testequal
           score: 100
@@ -127,11 +129,11 @@ deadlines:
           score: 100
 
     - group: Concurrency with shared memory
-      start: 2025-10-30 18:00 # Чт
+      start: 2026-04-02 18:00 # Чт
       steps:
-        0.3: 2025-11-06 17:59 # Чт
-      end: 2025-11-13 17:59 # Чт
-      enabled: true
+        0.3: 2026-04-09 17:59 # Чт
+      end: 2026-04-16 17:59 # Чт
+      enabled: false
       tasks:
         - task: dupcall
           score: 200
@@ -143,11 +145,11 @@ deadlines:
           score: 300
 
     - group: HTTP
-      start: 2025-11-06 18:00 # Чт (исправлено с 2025-03-27)
+      start: 2026-04-09 18:00 # Чт (исправлено с 2025-03-27)
       steps:
-        0.3: 2025-11-13 17:59 # Чт
-      end: 2025-11-16 17:59 # Чт (исправлено с 2025-07-10)
-      enabled: true
+        0.3: 2026-04-16 17:59 # Чт
+      end: 2026-04-19 17:59 # Чт (исправлено с 2025-07-10)
+      enabled: false
       tasks:
         - task: urlshortener
           score: 100
@@ -161,11 +163,11 @@ deadlines:
           score: 200
 
     - group: Database
-      start: 2025-11-13 18:00 # Чт (исправлено с 2025-04-03)
+      start: 2026-04-16 18:00 # Чт (исправлено с 2025-04-03)
       steps:
-        0.3: 2025-11-23 17:59 # Чт
-      end: 2025-11-23 23:59 # Чт (исправлено с 2025-07-10)
-      enabled: true
+        0.3: 2026-04-26 17:59 # Чт
+      end: 2026-04-26 23:59 # Чт (исправлено с 2025-07-10)
+      enabled: false
       tasks:
         - task: dao
           score: 100
@@ -177,20 +179,20 @@ deadlines:
           score: 300
 
     - group: "[HW] Dist Build"
-      start: 2025-11-13 18:00 # Чт (исправлено с 2025-04-03)
-      end: 2025-12-18 23:59 # Скорректировал, чтобы был после окончания других групп
-      enabled: true
+      start: 2026-04-16 18:00 # Чт (исправлено с 2025-04-03)
+      end: 2026-05-21 23:59 # Скорректировал, чтобы был после окончания других групп
+      enabled: false
       is_large: true
       tasks:
         - task: distbuild
           score: 1
 
     - group: Generics
-      start: 2025-11-20 18:00 # Чт (исправлено с 2025-04-14)
+      start: 2026-04-23 18:00 # Чт (исправлено с 2025-04-14)
       steps:
-        0.3: 2025-11-27 17:59 # Чт
-      end: 2025-11-30 17:59 # Чт (исправлено с 2025-07-10)
-      enabled: true
+        0.3: 2026-04-30 17:59 # Чт
+      end: 2026-05-03 17:59 # Чт (исправлено с 2025-07-10)
+      enabled: false
       tasks:
         - task: genericsum
           score: 100
@@ -202,11 +204,11 @@ deadlines:
           score: 300
 
     - group: Reflect
-      start: 2025-11-20 18:00 # Чт (исправлено с 2025-04-17)
+      start: 2026-04-23 18:00 # Чт (исправлено с 2025-04-17)
       steps:
-        0.3: 2025-12-11 17:59 # Чт
-      end: 2025-12-18 17:59 # Чт (исправлено с 2025-07-10)
-      enabled: true
+        0.3: 2026-05-14 17:59 # Чт
+      end: 2026-05-21 17:59 # Чт (исправлено с 2025-07-10)
+      enabled: false
       tasks:
         - task: reversemap
           score: 100
@@ -220,11 +222,11 @@ deadlines:
           score: 100
 
     - group: Low level
-      start: 2025-12-04 18:00 # Чт (исправлено с 2025-04-24)
+      start: 2026-05-07 18:00 # Чт (исправлено с 2025-04-24)
       steps:
-        0.3: 2025-12-18 17:59 # Чт
-      end: 2025-12-25 17:59 # Чт (исправлено с 2025-07-10)
-      enabled: true
+        0.3: 2026-05-21 17:59 # Чт
+      end: 2026-05-28 17:59 # Чт (исправлено с 2025-07-10)
+      enabled: false
       tasks:
         - task: illegal
           score: 100
@@ -234,17 +236,17 @@ deadlines:
           score: 100
 
     - group: Observability
-      start: 2025-12-18 18:00 # Чт (исправлено с 2025-05-15)
-      end: 2026-01-08 23:59 # Скорректировал, дал больше времени после Нового Года
-      enabled: true
+      start: 2026-05-21 18:00 # Чт (исправлено с 2025-05-15)
+      end: 2026-06-11 23:59 # Скорректировал, дал больше времени после Нового Года
+      enabled: false
       tasks:
         - task: firegod
           score: 200
 
     - group: Bonus
-      start: 2025-11-20 13:00 # Чт (исправлено с 2025-04-04)
-      end: 2026-01-08 23:59 # Скорректировал
-      enabled: true
+      start: 2026-04-23 13:00 # Чт (исправлено с 2025-04-04)
+      end: 2026-06-11 23:59 # Скорректировал
+      enabled: false
       tasks:
         - task: smartsched
           is_bonus: true
