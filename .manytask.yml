@@ -23,7 +23,7 @@ deadlines:
 
   schedule:
     - group: Hello World
-      start: 2026-02-12 18:00
+      start: 2026-02-01 18:00
       steps:
         0.3: 2026-03-04 00:00
       end: 2026-03-04 00:00
