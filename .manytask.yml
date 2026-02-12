@@ -25,8 +25,8 @@ deadlines:
     - group: Hello World
       start: 2026-02-01 18:00
       steps:
-        0.3: 2026-03-04 00:00
-      end: 2026-03-04 00:00
+        0.3: 2026-02-22 23:59
+      end: 2026-07-10 23:59
       enabled: true
       tasks:
         - task: sum
@@ -41,10 +41,10 @@ deadlines:
           score: 100
 
     - group: Basics
-      start: 2026-02-19 18:00 # Чт
+      start: 2026-02-19 18:00
       steps:
-        0.3: 2026-02-27 23:59 # Чт ровно через неделю
-      end: 2026-03-05 17:59 # Чт ровно через 2 недели от start
+        0.3: 2026-03-01 23:59
+      end: 2026-07-10 23:59
       enabled: false
       tasks:
         - task: hotelbusiness
@@ -61,10 +61,10 @@ deadlines:
           score: 100
 
     - group: Interfaces
-      start: 2026-02-26 18:00 # Чт (сразу после окончания Basics)
+      start: 2026-02-26 18:00
       steps:
-        0.3: 2026-03-12 17:59 # Чт
-      end: 2026-03-19 17:59 # Чт
+        0.3: 2026-03-08 23:59
+      end: 2026-07-10 23:59
       enabled: false
       tasks:
         - task: otp
@@ -81,10 +81,10 @@ deadlines:
           score: 100
 
     - group: Goroutines
-      start: 2026-03-19 18:00 # Чт
+      start: 2026-03-05 18:00
       steps:
-        0.3: 2026-03-26 17:59 # Чт
-      end: 2026-03-29 23:59 # Вс
+        0.3: 2026-03-15 23:59
+      end: 2026-07-10 23:59
       enabled: false
       tasks:
         - task: tour1
@@ -101,9 +101,8 @@ deadlines:
           score: 100
 
     - group: "[HW] Gitfame"
-      start: 2026-03-19 18:00 # Чт
-      # Для большого ДЗ steps часто не нужен или срок больше
-      end: 2026-04-09 23:59 # Оставляем вашу исходную дату, т.к. это большой проект
+      start: 2026-03-05 18:00
+      end: 2026-03-20 23:59
       enabled: false
       is_large: true
       tasks:
@@ -111,10 +110,10 @@ deadlines:
           score: 0
 
     - group: Testing
-      start: 2026-03-26 18:00 # Чт
+      start: 2026-03-12 18:00
       steps:
-        0.3: 2026-04-02 17:59 # Чт
-      end: 2026-04-09 17:59 # Чт (обратите внимание, сдвинулось на неделю из-за правила)
+        0.3: 2026-03-22 23:59
+      end: 2026-07-10 23:59
       enabled: false
       tasks:
         - task: testequal
@@ -129,10 +128,10 @@ deadlines:
           score: 100
 
     - group: Concurrency with shared memory
-      start: 2026-04-02 18:00 # Чт
+      start: 2026-03-19 18:00
       steps:
-        0.3: 2026-04-09 17:59 # Чт
-      end: 2026-04-16 17:59 # Чт
+        0.3: 2026-03-30 23:59
+      end: 2026-07-10 23:59
       enabled: false
       tasks:
         - task: dupcall
@@ -145,10 +144,10 @@ deadlines:
           score: 300
 
     - group: HTTP
-      start: 2026-04-09 18:00 # Чт (исправлено с 2025-03-27)
+      start: 2026-03-26 18:00
       steps:
-        0.3: 2026-04-16 17:59 # Чт
-      end: 2026-04-19 17:59 # Чт (исправлено с 2025-07-10)
+        0.3: 2026-04-05 23:59
+      end: 2026-07-10 23:59
       enabled: false
       tasks:
         - task: urlshortener
@@ -163,10 +162,10 @@ deadlines:
           score: 200
 
     - group: Database
-      start: 2026-04-16 18:00 # Чт (исправлено с 2025-04-03)
+      start: 2026-04-02 13:00
       steps:
-        0.3: 2026-04-26 17:59 # Чт
-      end: 2026-04-26 23:59 # Чт (исправлено с 2025-07-10)
+        0.3: 2026-04-12 23:59
+      end: 2026-07-10 23:59
       enabled: false
       tasks:
         - task: dao
@@ -179,8 +178,8 @@ deadlines:
           score: 300
 
     - group: "[HW] Dist Build"
-      start: 2026-04-16 18:00 # Чт (исправлено с 2025-04-03)
-      end: 2026-05-21 23:59 # Скорректировал, чтобы был после окончания других групп
+      start: 2026-04-02 13:00
+      end: 2026-05-10 23:59
       enabled: false
       is_large: true
       tasks:
@@ -188,10 +187,10 @@ deadlines:
           score: 1
 
     - group: Generics
-      start: 2026-04-23 18:00 # Чт (исправлено с 2025-04-14)
+      start: 2026-04-13 18:00
       steps:
-        0.3: 2026-04-30 17:59 # Чт
-      end: 2026-05-03 17:59 # Чт (исправлено с 2025-07-10)
+        0.3: 2026-04-26 23:59
+      end: 2026-07-10 23:59
       enabled: false
       tasks:
         - task: genericsum
@@ -204,10 +203,10 @@ deadlines:
           score: 300
 
     - group: Reflect
-      start: 2026-04-23 18:00 # Чт (исправлено с 2025-04-17)
+      start: 2026-04-16 18:00
       steps:
-        0.3: 2026-05-14 17:59 # Чт
-      end: 2026-05-21 17:59 # Чт (исправлено с 2025-07-10)
+        0.3: 2026-05-03 23:59
+      end: 2026-07-10 23:59
       enabled: false
       tasks:
         - task: reversemap
@@ -222,10 +221,10 @@ deadlines:
           score: 100
 
     - group: Low level
-      start: 2026-05-07 18:00 # Чт (исправлено с 2025-04-24)
+      start: 2026-04-23 18:00
       steps:
-        0.3: 2026-05-21 17:59 # Чт
-      end: 2026-05-28 17:59 # Чт (исправлено с 2025-07-10)
+        0.3: 2026-05-10 23:59
+      end: 2026-07-10 23:59
       enabled: false
       tasks:
         - task: illegal
@@ -236,16 +235,16 @@ deadlines:
           score: 100
 
     - group: Observability
-      start: 2026-05-21 18:00 # Чт (исправлено с 2025-05-15)
-      end: 2026-06-11 23:59 # Скорректировал, дал больше времени после Нового Года
+      start: 2026-05-14 13:00
+      end: 2026-07-10 23:59
       enabled: false
       tasks:
         - task: firegod
           score: 200
 
     - group: Bonus
-      start: 2026-04-23 13:00 # Чт (исправлено с 2025-04-04)
-      end: 2026-06-11 23:59 # Скорректировал
+      start: 2026-04-03 13:00
+      end: 2026-07-10 23:59
       enabled: false
       tasks:
         - task: smartsched
