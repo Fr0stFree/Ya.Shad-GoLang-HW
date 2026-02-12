@@ -9,7 +9,7 @@ import (
 
 var testingToken = ""
 
-const reportEndpoint = "https://app.manytask.org/api/itmo-go-2025-fall/report"
+const reportEndpoint = "https://app.manytask.org/api/go-2026-spring/report"
 
 func reportTestResults(token string, task string, userID string, failed bool) error {
 	if failed {
