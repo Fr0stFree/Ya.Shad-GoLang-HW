@@ -3,5 +3,5 @@
 package tour0
 
 func Tour() string {
-	return ""
+	return "tour0 done!"
 }
