@@ -22,7 +22,9 @@ func (c *LRUCache) Set(key, value int) {
 	if element, exists := c.storage[key]; exists {
 		item := element.Value.(*CacheItem)
 		item.value = value
-		c.order.MoveToFront(element)
+		if element != c.order.Front() {
+			c.order.MoveToFront(element)
+		}
 		return
 	}
 	if c.order.Len() >= c.capacity {
@@ -64,7 +66,7 @@ func (c *LRUCache) Range(f func(key, value int) bool) {
 func New(cap int) Cache {
 	return &LRUCache{
 		capacity: cap,
-		storage:  make(map[int]*list.Element),
+		storage:  make(map[int]*list.Element, cap),
 		order:    list.New(),
 	}
 }
