@@ -1,0 +1,16 @@
+Your pipeline #{{.Pipeline.ID}} {{if eq .Pipeline.Status "ok"}}passed!{{else}}has failed!{{end}}
+    Project:      {{.Project.GroupID}}/{{.Project.ID}}
+    Branch:       🌿 {{.Branch}}
+    Commit:       {{trim .Commit.Hash 8}} {{.Commit.Message}}
+    CommitAuthor: {{.Commit.Author}}{{if eq .Pipeline.Status "failed"}}
+{{- $first := true -}}
+{{- range $job := .Pipeline.FailedJobs }}
+{{- if $first -}}
+{{- $first = false -}}
+{{- else }}
+
+{{- end }}
+        Stage: {{$job.Stage}}, Job {{$job.Name}}
+{{last $job.RunnerLog 10 -}}
+{{- end -}}
+{{- end}}
